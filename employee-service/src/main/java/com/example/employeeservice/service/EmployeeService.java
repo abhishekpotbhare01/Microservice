@@ -18,6 +18,7 @@ public class EmployeeService implements IEmployeeService {
     private EmployeeRepository employeeRepository;
     private RestTemplate restTemplate;
     private WebClient webClient;
+    private ApiClient apiClient;
 
     @Override
     public EmployeeDto saveEmployee(EmployeeDto employeeDto) {
@@ -44,16 +45,17 @@ public class EmployeeService implements IEmployeeService {
         Employee employee = employeeRepository.findById(empId).orElseThrow(() -> new RuntimeException("empId " + empId + " not exists"));
 //        ResponseEntity<DepartmentDto> responseEntity = restTemplate.getForEntity("http://localhost:8080/api/dept/" + employee.getDeptCode(),
 //                DepartmentDto.class);
-        String uri="http://localhost:8080/api/dept/" + employee.getDeptCode();
+        //  DepartmentDto departmentDto = responseEntity.getBody();
+//        String uri="http://localhost:8080/api/dept/" + employee.getDeptCode();
+//
+//        DepartmentDto departmentDto = webClient.get()
+//                .uri(uri)
+//                .retrieve()
+//                .bodyToMono(DepartmentDto.class)
+//                .block();
 
-        DepartmentDto departmentDto = webClient.get()
-                .uri(uri)
-                .retrieve()
-                .bodyToMono(DepartmentDto.class)
-                .block();
 
-
-     //  DepartmentDto departmentDto = responseEntity.getBody();
+        DepartmentDto departmentDto = apiClient.fetchDepartmentDetails(employee.getDeptCode());
 
         EmployeeDto employeeDto = EmployeeDto.builder()
                 .empId(employee.getEmpId())
