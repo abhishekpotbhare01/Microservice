@@ -5,6 +5,7 @@ import com.example.employeeservice.dto.DepartmentDto;
 import com.example.employeeservice.dto.EmployeeDto;
 import com.example.employeeservice.model.Employee;
 import com.example.employeeservice.respository.EmployeeRepository;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -40,22 +41,22 @@ public class EmployeeService implements IEmployeeService {
         return employeeDto1;
     }
 
+    @CircuitBreaker(name = "${spring.application.name}",fallbackMethod = "getDefaultDepartment")
     @Override
     public ApiResponseDto getEmployeeById(Long empId) {
         Employee employee = employeeRepository.findById(empId).orElseThrow(() -> new RuntimeException("empId " + empId + " not exists"));
 //        ResponseEntity<DepartmentDto> responseEntity = restTemplate.getForEntity("http://localhost:8080/api/dept/" + employee.getDeptCode(),
 //                DepartmentDto.class);
         //  DepartmentDto departmentDto = responseEntity.getBody();
-//        String uri="http://localhost:8080/api/dept/" + employee.getDeptCode();
-//
-//        DepartmentDto departmentDto = webClient.get()
-//                .uri(uri)
-//                .retrieve()
-//                .bodyToMono(DepartmentDto.class)
-//                .block();
+        String uri="http://localhost:8080/api/dept/" + employee.getDeptCode();
 
+        DepartmentDto departmentDto = webClient.get()
+                .uri(uri)
+                .retrieve()
+                .bodyToMono(DepartmentDto.class)
+                .block();
 
-        DepartmentDto departmentDto = apiClient.fetchDepartmentDetails(employee.getDeptCode());
+//        DepartmentDto departmentDto = apiClient.fetchDepartmentDetails(employee.getDeptCode());
 
         EmployeeDto employeeDto = EmployeeDto.builder()
                 .empId(employee.getEmpId())
@@ -69,6 +70,30 @@ public class EmployeeService implements IEmployeeService {
                 .employeeDto(employeeDto)
                 .build();
         return apiResponseDto;
+    }
+
+    public ApiResponseDto getDefaultDepartment(Long empId,Exception exception){
+        Employee employee = employeeRepository.findById(empId).orElseThrow(() -> new RuntimeException("empId " + empId + " not exists"));
+        EmployeeDto employeeDto = EmployeeDto.builder()
+                .empId(employee.getEmpId())
+                .firstName(employee.getFirstName())
+                .lastName(employee.getLastName())
+                .email(employee.getEmail())
+                .deptCode(employee.getDeptCode())
+                .build();
+
+        DepartmentDto departmentDto = DepartmentDto.builder()
+                .deptCode("RND001")
+                .deptName("RnD")
+                .deptDesc("Research and Development")
+                .build();
+
+        ApiResponseDto apiResponseDto = ApiResponseDto.builder()
+                .departmentDto(departmentDto)
+                .employeeDto(employeeDto)
+                .build();
+        return apiResponseDto;
+
     }
 
 }
