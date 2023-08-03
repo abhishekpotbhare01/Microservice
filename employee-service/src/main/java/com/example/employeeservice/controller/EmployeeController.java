@@ -2,18 +2,17 @@ package com.example.employeeservice.controller;
 
 import com.example.employeeservice.dto.ApiResponseDto;
 import com.example.employeeservice.dto.EmployeeDto;
-import com.example.employeeservice.service.EmployeeService;
+import com.example.employeeservice.service.EmployeeServiceImpl;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 
 @RestController
 @RequestMapping("/api/emp")
 @AllArgsConstructor
 public class EmployeeController {
-    private EmployeeService employeeService;
+    private EmployeeServiceImpl employeeService;
     @PostMapping
     public ResponseEntity<EmployeeDto> savedEmployee(@RequestBody EmployeeDto employeeDto) {
         EmployeeDto employeeDto1 = employeeService.saveEmployee(employeeDto);
